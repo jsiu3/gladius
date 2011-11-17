@@ -279,7 +279,7 @@ var algorithm = function(options) {
   };
 
   options = options || {};
-  var _randomObject = window.Math;
+  var _randomObject = Math;
   var _perlinNoise = new ClassicalNoise();
   var _simplexNoise = new SimplexNoise();
   if (options.seed) seedRandom(options.seed);
