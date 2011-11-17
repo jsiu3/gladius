@@ -113,19 +113,22 @@ var algorithm = function(options) {
   * It is assumed to have a random() method.
   */
   var SimplexNoise = function(r) {
-  if (r == undefined) r = Math;
-    this.grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],
-                                   [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
-                                   [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
-    this.p = [];
-    for (var i=0; i<256; i++) {
-  this.p[i] = Math.floor(r.random()*256);
+    var that = this;
+    var init =  function(){
+      if (r == undefined) r = Math;
+      that.p = [];
+      for (var i=0; i<256; i++) {
+        that.p[i] = Math.floor(r.random()*256);
+      }
+      // To remove the need for index wrapping, double the permutation table length
+      that.perm = [];
+      for(var i=0; i<512; i++) {
+        that.perm[i]=that.p[i & 255];
+      }
     }
-    // To remove the need for index wrapping, double the permutation table length
-    this.perm = [];
-    for(var i=0; i<512; i++) {
-  this.perm[i]=this.p[i & 255];
-  }
+    this.grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],
+                  [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
+                  [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
   
     // A lookup table to traverse the simplex around a given point in 4D.
     // Details can be found where this table is used, in the 4D noise method.
