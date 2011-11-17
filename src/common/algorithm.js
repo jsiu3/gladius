@@ -109,20 +109,10 @@ var algorithm = function(options) {
   * It is assumed to have a random() method.
   */
   var SimplexNoise = function(r) {
-  if (r == undefined) r = Math;
+    var that = this;    
     this.grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],
-                                   [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
-                                   [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
-    this.p = [];
-    for (var i=0; i<256; i++) {
-  this.p[i] = Math.floor(r.random()*256);
-    }
-    // To remove the need for index wrapping, double the permutation table length
-    this.perm = [];
-    for(var i=0; i<512; i++) {
-  this.perm[i]=this.p[i & 255];
-  }
-  
+                  [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
+                  [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
     // A lookup table to traverse the simplex around a given point in 4D.
     // Details can be found where this table is used, in the 4D noise method.
     this.simplex = [
@@ -134,6 +124,20 @@ var algorithm = function(options) {
       [0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],
       [2,0,1,3],[0,0,0,0],[0,0,0,0],[0,0,0,0],[3,0,1,2],[3,0,2,1],[0,0,0,0],[3,1,2,0],
       [2,1,0,3],[0,0,0,0],[0,0,0,0],[0,0,0,0],[3,1,0,2],[0,0,0,0],[3,2,0,1],[3,2,1,0]];
+    
+    this.init =  function(){
+      if (r == undefined) r = Math;
+      that.p = [];
+      for (var i=0; i<256; i++) {
+        that.p[i] = Math.floor(r.random()*256);
+      }
+      // To remove the need for index wrapping, double the permutation table length
+      that.perm = [];
+      for(var i=0; i<512; i++) {
+        that.perm[i]=that.p[i & 255];
+      }
+    }
+    that.init(r);
   };
   
   SimplexNoise.prototype.dot = function(g, x, y) {
@@ -283,17 +287,24 @@ var algorithm = function(options) {
   var _perlinNoise = new ClassicalNoise();
   var _simplexNoise = new SimplexNoise();
   if (options.seed) seedRandom(options.seed);
+  
+  var reInitNoise = function(r) {
+    _randomObject = r;  //Kept it here incase we may need it in the object
+    _perlinNoise.init(_randomObject);
+    _simplexNoise.init(_randomObject);
+  };
  
   this.seedRandom = function(seed) {
-    seed = seed || Math.random();
+    if(seed !== false)
+      seed = seed || Math.random();
     if (typeof seed === Number) {
-      _randomObject = { 
+      reInitNoise({ 
         random: function() { 
           return seed; 
         }
-      };
-      _perlinNoise.init(_randomObject);
-      _simplexNoise.init(_randomObject);
+      });
+    } else if (seed === false){  //this turns seed off
+      reInitNoise(Math);
     } else {
       throw "You must seed with a number.";
     }
