@@ -125,7 +125,7 @@ var algorithm = function(options) {
       [2,0,1,3],[0,0,0,0],[0,0,0,0],[0,0,0,0],[3,0,1,2],[3,0,2,1],[0,0,0,0],[3,1,2,0],
       [2,1,0,3],[0,0,0,0],[0,0,0,0],[0,0,0,0],[3,1,0,2],[0,0,0,0],[3,2,0,1],[3,2,1,0]];
     
-    this.init =  function(){
+    this.init = function(r){
       if (r == undefined) r = Math;
       that.p = [];
       for (var i=0; i<256; i++) {
@@ -141,7 +141,8 @@ var algorithm = function(options) {
   };
   
   SimplexNoise.prototype.dot = function(g, x, y) {
-  return g[0]*x + g[1]*y;
+    //alert(g); //testing if g has value
+    return g[0]*x + g[1]*y;
   };
   
   SimplexNoise.prototype.noise = function(xin, yin) {
@@ -286,7 +287,6 @@ var algorithm = function(options) {
   var _randomObject = Math;
   var _perlinNoise = new ClassicalNoise();
   var _simplexNoise = new SimplexNoise();
-  if (options.seed) seedRandom(options.seed);
   
   var reInitNoise = function(r) {
     _randomObject = r;  //Kept it here incase we may need it in the object
@@ -297,10 +297,16 @@ var algorithm = function(options) {
   this.seedRandom = function(seed) {
     if(seed !== false)
       seed = seed || Math.random();
-    if (typeof seed === Number) {
+    if (typeof seed === "number") {
       reInitNoise({ 
-        random: function() { 
-          return seed; 
+        random: function() {
+          var sum=0;
+          var num=seed;
+          while(num>0){
+            sum=sum+num%10;
+            num=Math.floor(num/10);
+          }
+          return (sum/100); 
         }
       });
     } else if (seed === false){  //this turns seed off
@@ -333,4 +339,6 @@ var algorithm = function(options) {
   this.simplex4 = function(x,y,z,w) { 
     return 0.0; 
   };
+  
+  if (options.seed) this.seedRandom(options.seed);
 };
