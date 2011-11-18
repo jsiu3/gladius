@@ -1,4 +1,22 @@
 var algorithm = function(options) {
+  
+  // http://michalbe.blogspot.com/2011/02/javascript-random-numbers-with-custom.html
+  var random = function(seed) {
+    var constant = Math.pow(2, 13)+1,
+    prime = 37,
+    maximum = Math.pow(2, 50);
+    seed = seed || (new Date()).getTime();
+   
+    return {
+      next : function() {
+        seed *= constant;
+        seed += prime;
+        seed %= maximum;            
+        return seed;
+      }
+    }
+  }
+  
   // JS implementation from https://gist.github.com/304522 
   // Ported from Stefan Gustavson's java implementation
   // http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
@@ -298,14 +316,15 @@ var algorithm = function(options) {
     if(seed !== false)
       seed = seed || Math.random();
     if (typeof seed === "number") {
-      reInitNoise({ 
+      reInitNoise({
+        randomizer: new random(seed),
         random: function() {
           var sum=0;
-          var num=seed;
+          var num=this.randomizer.next();
           while(num>0){
             sum=sum+num%10;
             num=Math.floor(num/10);
-          }
+          } 
           return (sum/100); 
         }
       });
