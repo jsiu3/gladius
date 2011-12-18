@@ -426,21 +426,14 @@ var algorithm = function(options) {
   };
 
   options = options || {};
-  var _randomObject = Math;
   var _perlinNoise = new ClassicalNoise();
   var _simplexNoise = new SimplexNoise();
-  
-  var reInitNoise = function(r) {
-    _randomObject = r;  //Kept it here incase we may need it in the object
-    _perlinNoise.init(_randomObject);
-    _simplexNoise.init(_randomObject);
-  };
  
-  this.seedRandom = function(seed) {
+  this.seedPerlin = function(seed) {
     if(seed !== false)
-      seed = seed || Math.random();
+      seed = seed || Math.random(); //Gives random seed if seed is undefined
     if (typeof seed === "number") {
-      reInitNoise({
+      _perlinNoise.init({
         randomizer: new random(seed),
         random: function() {
           var sum=0;
@@ -453,14 +446,37 @@ var algorithm = function(options) {
         }
       });
     } else if (seed === false){  //this turns seed off
-      reInitNoise(Math);
+      _perlinNoise.init(Math);
+    } else {
+      throw "You must seed with a number.";
+    }
+  };
+
+    this.seedSimplex = function(seed) {
+    if(seed !== false)
+      seed = seed || Math.random(); //Gives random seed if seed is undefined
+    if (typeof seed === "number") {
+      _simplexNoise.init({
+        randomizer: new random(seed),
+        random: function() {
+          var sum=0;
+          var num=this.randomizer.next();
+          while(num>0){
+            sum=sum+num%10;
+            num=Math.floor(num/10);
+          } 
+          return (sum/143); 
+        }
+      });
+    } else if (seed === false){  //this turns seed off
+      _simplexNoise.init(Math);
     } else {
       throw "You must seed with a number.";
     }
   };
   
   this.perlin2 = function(x,y) { 
-    return 0.0; 
+    return _perlinNoise.noise(x,y,0); ; 
   };
   
   this.perlin3 = function(x,y,z) { 
@@ -468,7 +484,7 @@ var algorithm = function(options) {
   };
   
   this.perlin4 = function(x,y,z,w) { 
-    return 0.0; 
+    return 0.0; //This needs work
   };
   
   this.simplex2 = function(x,y) { 
@@ -483,5 +499,8 @@ var algorithm = function(options) {
     return _simplexNoise.noise4d(x,y,z,w); 
   };
   
-  if (options.seed) this.seedRandom(options.seed);
+  if (options.seed) {
+    this.seedPerlin(options.seed);
+    this.seedSimplex(options.seed);
+  }
 };
